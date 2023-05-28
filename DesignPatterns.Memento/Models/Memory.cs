@@ -20,14 +20,7 @@ namespace DesignPatterns.Memento.Models
             return NotePadMementos;
         }
 
-        public NotePadMemento GetPreviousMemento()
-        {
-            RemoveLastMomento();
-
-            return NotePadMementos.LastOrDefault();
-        }
-
-        private void RemoveLastMomento()
+        public NotePadMemento GetCurrentMemento()
         {
             if (!NotePadMementos.Any()) { throw new IndexOutOfRangeException("List is empty!"); }
 
@@ -36,6 +29,8 @@ namespace DesignPatterns.Memento.Models
             if (currentElement is null) { throw new Exception("Not Found Memento!"); }
 
             NotePadMementos.Remove(currentElement);
+
+            return currentElement;
         }
     }
 }

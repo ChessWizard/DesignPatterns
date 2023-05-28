@@ -13,7 +13,12 @@ for (int i = 0; i < 5; i++)
     notePad.Content = userInput;
 
     var memento = notePad.Save();
-    memory.Add(memento);
+
+    // last one is current, no need add to memory
+    if (i != 4)
+    {
+        memory.Add(memento);
+    }
 
     Console.WriteLine("\n");
 }
@@ -39,7 +44,7 @@ if (userDecision is "y")
         var userBackwardInput = Console.ReadLine()?.ToLower();
         if (userBackwardInput is "b")
         {
-            var currentMomento = memory.GetPreviousMemento();
+            var currentMomento = memory.GetCurrentMemento();
 
             if (currentMomento is null)
             {
