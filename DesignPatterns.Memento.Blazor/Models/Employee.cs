@@ -24,10 +24,10 @@ namespace DesignPatterns.Memento.Blazor.Models
 
         public void UndoChanges(EmployeeMemento mementoModel)
         {
-            mementoModel.Originator.Name = Name;
-            mementoModel.Originator.Surname = Surname;
-            mementoModel.Originator.Age = Age;
-            mementoModel.Originator.CitizenNumber = CitizenNumber;
+            Name = mementoModel.Originator.Name;
+            Surname = mementoModel.Originator.Surname;
+            Age = mementoModel.Originator.Age;
+            CitizenNumber = mementoModel.Originator.CitizenNumber;
         }
     }
 }
