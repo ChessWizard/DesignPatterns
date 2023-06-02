@@ -8,7 +8,7 @@ namespace DesignPatterns.Memento.Blazor.Models
 
         public string Surname { get; set; }
 
-        public int Age { get; set; }
+        public string Age { get; set; }
 
         public string CitizenNumber { get; set; }
 

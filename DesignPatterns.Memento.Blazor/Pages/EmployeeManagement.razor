@@ -1,7 +1,71 @@
-﻿<h3>EmployeeManagement</h3>
+﻿@page "/employeeManagement"
+@using DesignPatterns.Memento.Blazor.Models;
 
+<div class="container">
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title text-center">
+                HR Management System
+            </div>
+        </div>
+
+        <div class="card-body">
+                <label>Name</label>
+            <input value="@employee.Name" @onchange="@((args) => CreateEmployee(args, "name"))" /><br /><br />
+                <label>Surname</label>
+            <input value="@employee.Surname" @onchange="@((args) => CreateEmployee(args, "surname"))" /><br /><br />
+                <label>Age</label>
+            <input value="@employee.Age" @onchange="@((args) => CreateEmployee(args, "age"))" /><br /><br />
+                <label>Citizen Number</label>
+            <input value="@employee.CitizenNumber" @onchange="@((args) => CreateEmployee(args, "citizennumber"))" /><br /><br />
+                <button class="btn btn-danger" @onclick="@UndoChanges">Undo</button>
+        </div>
+
+    </div>
+
+</div>
 
 
 @code {
 
+    Employee employee = new();
+    Employee tempEmployee = new();
+    EmployeeManager manager = new();
+
+    public void CreateEmployee(ChangeEventArgs args, string inputName)
+    {
+        var value = args.Value.ToString();
+
+        switch (inputName)
+        {
+            case "name" : employee.Name = value; break;
+            case "surname": employee.Surname = value; break;
+            case "age": employee.Age = value; break;
+            case "citizennumber": employee.CitizenNumber = value; break;
+        }
+
+        var memento = employee.CreateMemento();
+        manager.AddMementoToMemory(memento);
+    }
+
+    public void UndoChanges()
+    {
+        var memoryLength = manager.Memory.Count;
+
+        var currentMemento = manager.GetCurrentMemento();
+
+        if (currentMemento is null) return;
+
+        employee.UndoChanges(currentMemento);
+        UndoInputs(employee);// employee durumu input'lara da yansısın
+    }
+
+    private void UndoInputs(Employee currentEmployee)
+    {
+        employee.Name = currentEmployee.Name;
+        employee.Surname = currentEmployee.Surname;
+        employee.Age = currentEmployee.Age;
+        employee.CitizenNumber = currentEmployee.CitizenNumber;
+    }
 }

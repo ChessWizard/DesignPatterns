@@ -5,8 +5,6 @@
     /// </summary>
     public interface IMemento<TMemento> where TMemento : class
     {
-        public Stack<TMemento> memory { get; set; }
-
         public void AddMementoToMemory(TMemento memento);
         
         public TMemento GetCurrentMemento();
