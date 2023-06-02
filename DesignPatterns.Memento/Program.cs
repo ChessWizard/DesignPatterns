@@ -68,6 +68,7 @@ else if (userDecision is "n")
     var currentMemory = memory.GetCurrentMemory();
     currentMemory.ForEach(memory => Console.WriteLine(memory.ContentMemento));
 }
+
 else
 {
     return;
