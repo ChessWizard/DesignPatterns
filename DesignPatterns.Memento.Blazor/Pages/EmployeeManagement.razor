@@ -51,11 +51,16 @@
 
     public void UndoChanges()
     {
-        var memoryLength = manager.Memory.Count;
+        var mementoList = manager.Memory;
+        if (!mementoList.Any()) return;
 
         var currentMemento = manager.GetCurrentMemento();
 
-        if (currentMemento is null) return;
+        if (currentMemento is null)
+        {
+            UndoInputs(new());// eğer geçmiş yoksa demek ki son bir input vardır. Hangisi olursa silinsin diye tüm nesne boş gönderilir
+            return;
+        } 
 
         employee.UndoChanges(currentMemento);
         UndoInputs(employee);// employee durumu input'lara da yansısın
