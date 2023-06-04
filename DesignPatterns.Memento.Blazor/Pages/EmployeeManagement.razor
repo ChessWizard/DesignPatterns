@@ -1,5 +1,9 @@
 ﻿@page "/employeeManagement"
+@using Blazored.LocalStorage;
 @using DesignPatterns.Memento.Blazor.Models;
+@using System.Reflection;
+@inject IJSRuntime _jsRuntime;
+@inject ILocalStorageService _localStorageService;
 
 <div class="container">
 
@@ -11,42 +15,129 @@
         </div>
 
         <div class="card-body">
-                <label>Name</label>
-            <input value="@employee.Name" @onchange="@((args) => CreateEmployee(args, "name"))" /><br /><br />
-                <label>Surname</label>
-            <input value="@employee.Surname" @onchange="@((args) => CreateEmployee(args, "surname"))" /><br /><br />
-                <label>Age</label>
-            <input value="@employee.Age" @onchange="@((args) => CreateEmployee(args, "age"))" /><br /><br />
-                <label>Citizen Number</label>
-            <input value="@employee.CitizenNumber" @onchange="@((args) => CreateEmployee(args, "citizennumber"))" /><br /><br />
-                <button class="btn btn-danger" @onclick="@UndoChanges">Undo</button>
+            <div class="row">
+                <div class="col">
+                    <label>Name</label>
+                    <input id="employee-name" value="@employee.Name" @onchange="@((args) => CreateEmployee(args, "name"))" /><br /><br />
+                    <label>Surname</label>
+                    <input id="employee-surname" value="@employee.Surname" @onchange="@((args) => CreateEmployee(args, "surname"))" /><br /><br />
+                    <label>Age</label>
+                    <input id="employee-age" value="@employee.Age" @onchange="@((args) => CreateEmployee(args, "age"))" /><br /><br />
+                    <label>Citizen Number</label>
+                    <input id="employee-citizennumber" value="@employee.CitizenNumber" @onchange="@((args) => CreateEmployee(args, "citizennumber"))" /><br /><br />
+                    <button class="btn btn-danger" @onclick="@UndoChanges">Undo</button>
+                    <button id="create-changes" class="btn btn-success" @onclick="CreateEmployee">Create</button>
+                </div>
+                <div class="col">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Surname</th>
+                                <th>Age</th>
+                                <th>Citizen Number</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var counter = 0;
+                            }
+
+                            @if (tableList.Any())
+                            {
+                                @foreach (var employee in tableList)
+                                {
+                                    counter++;
+                                    <tr>
+                                        <td>@counter</td>
+                                        <td>@employee.Name</td>
+                                        <td>@employee.Surname</td>
+                                        <td>@employee.Age</td>
+                                        <td>@employee.CitizenNumber</td>
+                                    </tr>
+                                }
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
     </div>
 
+
+
 </div>
+
 
 
 @code {
 
     Employee employee = new();
-    Employee tempEmployee = new();
     EmployeeManager manager = new();
+    List<EmployeeListModel> tableList = new();
 
     public void CreateEmployee(ChangeEventArgs args, string inputName)
     {
-        var value = args.Value.ToString();
+        var value = args.Value;
 
         switch (inputName)
         {
-            case "name" : employee.Name = value; break;
-            case "surname": employee.Surname = value; break;
-            case "age": employee.Age = value; break;
-            case "citizennumber": employee.CitizenNumber = value; break;
+            case "name":
+                var name = value.ToString();
+                employee.Name = name;
+                break;
+
+            case "surname":
+                var surname = value.ToString();
+                employee.Surname = surname;
+                break;
+
+            case "age":
+                var age = Convert.ToByte(value);
+                employee.Age = age;
+                break;
+            case "citizennumber":
+                var citizenNumber = value.ToString();
+                employee.CitizenNumber = citizenNumber;
+                break;
         }
 
         var memento = employee.CreateMemento();
         manager.AddMementoToMemory(memento);
+    }
+
+    public async Task CreateEmployee()
+    {
+        var checkCreate = await _jsRuntime.InvokeAsync<bool>("checkCreateEmployee");
+
+        if (!checkCreate) return;
+
+        EmployeeListModel employeeModel = new()
+        {
+            Name = employee.Name,
+            Surname = employee.Surname,
+            Age = employee.Age,
+            CitizenNumber = employee.CitizenNumber
+        };
+
+        tableList.Add(employeeModel);
+        await _localStorageService.SetItemAsync("employeeList", tableList);
+
+        // Employee eklendikten sonra yeni employee için memento ve inputlar sıfırlansın
+        ClearInputs();
+        manager.ClearMemory();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var storedEmployees = await _localStorageService.GetItemAsync<List<EmployeeListModel>>("employeeList");
+
+        if (storedEmployees is null || !storedEmployees.Any()) return; 
+
+        tableList = storedEmployees;
     }
 
     public void UndoChanges()
@@ -60,7 +151,7 @@
         {
             UndoInputs(new());// eğer geçmiş yoksa demek ki son bir input vardır. Hangisi olursa silinsin diye tüm nesne boş gönderilir
             return;
-        } 
+        }
 
         employee.UndoChanges(currentMemento);
         UndoInputs(employee);// employee durumu input'lara da yansısın
@@ -73,4 +164,15 @@
         employee.Age = currentEmployee.Age;
         employee.CitizenNumber = currentEmployee.CitizenNumber;
     }
+
+    private void ClearInputs()
+    {
+        employee.Name = "";
+        employee.Surname = "";
+        employee.Age = 0;
+        employee.CitizenNumber = "";
+    }
+
 }
+
+

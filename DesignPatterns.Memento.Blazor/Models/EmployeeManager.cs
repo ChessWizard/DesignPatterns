@@ -13,5 +13,7 @@ namespace DesignPatterns.Memento.Blazor.Models
             Memory.Pop();
             return Memory.FirstOrDefault();// Stack olduğu için en üstteki eleman alınmalı
         }
+
+        public void ClearMemory() => Memory.Clear();
     }
 }
